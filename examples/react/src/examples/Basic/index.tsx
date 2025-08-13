@@ -159,7 +159,7 @@ const BasicFlow = () => {
       nodeDragThreshold={0}
     >
       <Background variant={BackgroundVariant.Dots} />
-      <MiniMap />
+      <MiniMap zoomable pannable />
       <Controls />
 
       <Panel position="top-right">

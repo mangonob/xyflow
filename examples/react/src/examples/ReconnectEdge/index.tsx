@@ -1,4 +1,4 @@
-import { useState, useCallback, MouseEvent as ReactMouseEvent } from 'react';
+import { useState, useCallback, MouseEvent as ReactMouseEvent, useRef } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -12,6 +12,11 @@ import {
   NodeChange,
   EdgeChange,
   HandleType,
+  MiniMap,
+  Background,
+  ReactFlowInstance,
+  Panel,
+  type FitViewOptions,
 } from '@xyflow/react';
 
 const initialNodes: Node[] = [
@@ -91,9 +96,31 @@ const initialNodes: Node[] = [
 ];
 
 const initialEdges: Edge[] = [
-  { id: 'e1-3', source: '1', target: '3', label: 'This edge can only be updated from source', reconnectable: 'source' },
-  { id: 'e2-4', source: '2', target: '4', label: 'This edge can only be updated from target', reconnectable: 'target' },
-  { id: 'e5-6', source: '5', target: '6', label: 'This edge can be updated from both sides' },
+  {
+    id: 'e1-3',
+    source: '1',
+    target: '3',
+    label: 'This edge can only be updated from source',
+    reconnectable: 'source',
+    animated: true,
+  },
+  {
+    id: 'e2-4',
+    source: '2',
+    target: '4',
+    label: 'This edge can only be updated from target',
+    reconnectable: 'target',
+    interactionWidth: 10,
+  },
+  {
+    id: 'e5-6',
+    source: '5',
+    target: '6',
+    type: 'smoothstep',
+    markerEnd: {
+      type: 'arrow',
+    },
+  },
 ];
 
 const onReconnectStart = (_: ReactMouseEvent, edge: Edge, handleType: HandleType) =>
@@ -116,20 +143,32 @@ const ReconnectEdge = () => {
     setEdges((es) => applyEdgeChanges(changes, es));
   }, []);
 
+  const flow = useRef<ReactFlowInstance>();
+  const fitViewOptions: FitViewOptions = { duration: 250, interpolate: 'linear' };
+
   return (
     <ReactFlow
       nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
-      snapToGrid={true}
+      snapToGrid={false}
       onReconnect={onReconnect}
+      onInit={(e) => (flow.current = e)}
       onConnect={onConnect}
       onReconnectStart={onReconnectStart}
       onReconnectEnd={onReconnectEnd}
+      elevateEdgesOnSelect
       fitView
     >
-      <Controls />
+      <Background />
+      <MiniMap zoomable pannable />
+      <Controls fitViewOptions={fitViewOptions} />
+      <Panel position="top-right">
+        <button onClick={() => flow.current?.setViewport({ x: 0, y: 0, zoom: 1 }, fitViewOptions)}>
+          Reset transform
+        </button>
+      </Panel>
     </ReactFlow>
   );
 };
